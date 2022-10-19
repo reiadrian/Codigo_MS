@@ -602,6 +602,7 @@ for iSet = 1:nSet
          elseif protype==3 %AA: Para proponer gdl diferente en FF y MatB
              if (conshyp==1 || conshyp==2)
                  ndn = ndn_sm; %Adopto para medio solido
+                 e_DatElem.pos_d=[1 2 5 6 9 10 13 14 17 18 21 22 25 26 29 30];
              elseif (conshyp==14 || conshyp==15 || conshyp==50)
                  ndn = ndn_pm; %Adopto para medio poroso saturado
                  %*******************************************************************************
@@ -630,6 +631,44 @@ for iSet = 1:nSet
                  e_DatElem.pos_d=[1 2 4 5 7 8 10 11 13 14 16 17 19 20 22 23];
                  e_DatElem.pos_p=[3 6 9 12];
                  e_DatElem.pos_p0=[15 18 21 24];
+             elseif conshyp==16
+                 %MODIFICO ndn para microescala con MULTIPLICADORES DE
+                 %LAGRANGE
+                 ndn_pm = 4;
+                 ndn = 4; %2 p/ desplamientos, 1 p/ poropresiones y 1 para el MULTIPLICADOR DE LAGRANGE  
+                 %*******************************************************************************
+                 %* LISTA DE NODOS  DE ESQUINA E INTERNOS (PROBLEMA BIFASE)                     *
+                 %*******************************************************************************
+                 %Diferencio los nodos de esquina de los internos partiendo del hecho de
+                 %que la conectividad viene dada por los 4 nodos de esquina seguido de
+                 %los 4 nodos internos
+                 conec_esq=conec(:,1:4);
+                 conec_int=conec(:,5:8);
+                 nodos_esq=conec_esq(:);
+                 nodos_int=conec_int(:);
+                 in_esq=unique(nodos_esq); %Nodos de esquina
+                 in_int=unique(nodos_int); %Nodos internos
+                 %Determino los grados de libertad en desplazamientos globales
+                 pos_dG = (1:1:nnod*ndn);
+                 pos_dG(3:ndn:nnod*ndn)=[];
+                 pos_dG(3:3:nnod*3)=[];
+                 %Determino los grados de libertad en poropresiones globales
+                 pos_pG=3*in;
+                 %Determino los grados de libertad en poropresiones globales
+                 pos_lambda=4*in;
+                 
+                 e_DatElem.ndn_d = 2;
+                 e_DatElem.ndn_p = 1;
+                 e_DatElem.ndn_lambda = 1;
+                 e_DatElem.dofpe_d = e_DatElem.ndn_d*npe;
+                 e_DatElem.dofpe_p = e_DatElem.ndn_p*(npe-4); %AA: ver si se puede hacer general
+                 %dofpe_lambda = dofpe_p
+%                  e_DatElem.dofpe_lambda = e_DatElem.ndn_p*(npe-4); %AA: ver si se puede hacer general
+                 e_DatElem.pos_d=[1 2 5 6 9 10 13 14 17 18 21 22 25 26 29 30];
+                 e_DatElem.pos_p=[3 7 11 15];
+                 e_DatElem.pos_lambda=[4 8 12 16];
+                 e_DatElem.pos_p0=[19 23 27 31];
+                 e_DatElem.pos_lambda0=[20 24 28 32];
              end
              %!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          %!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1869,6 +1908,7 @@ elseif protype == 3 %AA
         e_VG.pos_dG=pos_dG; %GDL en desplazamientos
         e_VG.pos_pG=pos_pG; %GDL en poropresiones
         e_VG.pos_lambda=pos_lambda; %GDL en MULTIPLICADORES DE LAGRANGE
+        e_VG.m_gdl = m_gdl;
     end
 end %AA
 

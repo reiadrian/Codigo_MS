@@ -49,16 +49,35 @@ function f_PostProcME_Bif(iStep,m_NumElemMacro,m_DefMacro,m_phiMacro,m_porpMacro
       if IRES   
          if ~mod(iStep,postpro_impre_step)
             % DESPLAZAMIENTO TOTAL DE LA MICRO-CELDA
-            ud=u(e_VG.pos_dG);
-            udTotal = [m_iDefMacro(1),m_iDefMacro(4)/2;m_iDefMacro(4)/2,m_iDefMacro(2)]*xx(:,1:2)'...
-               +reshape(ud,ndn_d,[]);
-            u = f_porp_nint(u,e_DatSet,e_VG); %AA: obtiene los valores de poropresiones en los nodos internos
-            up=u(e_VG.pos_pG);
-            ndn_p=e_VG.ndn_p;
-            upTotal = m_iporpMacro+m_iphiMacro'*xx(:,1:2)'+reshape(up,ndn_p,[]);
-            % POSTPROCESO GiD
-            matlab2gid_res_Bif(iStep,in,u,c_GdlCond,e_DatSet,e_VarEst_new,e_VarAux,...
-                 m_DefMacroCU,udTotal,upTotal,m_ElemLoc,e_VG)
+            %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MODIFIQUE PRTOYPE 3~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            if e_VG.protype==1 %AA
+                ud=u(e_VG.pos_dG);
+                udTotal = [m_iDefMacro(1),m_iDefMacro(4)/2;m_iDefMacro(4)/2,m_iDefMacro(2)]*xx(:,1:2)'...
+                   +reshape(ud,ndn_d,[]);
+                u = f_porp_nint(u,e_DatSet,e_VG); %AA: obtiene los valores de poropresiones en los nodos internos
+                up=u(e_VG.pos_pG);
+                ndn_p=e_VG.ndn_p;
+                upTotal = m_iporpMacro+m_iphiMacro'*xx(:,1:2)'+reshape(up,ndn_p,[]);
+                % POSTPROCESO GiD
+                matlab2gid_res_Bif(iStep,in,u,c_GdlCond,e_DatSet,e_VarEst_new,e_VarAux,...
+                     m_DefMacroCU,udTotal,upTotal,m_ElemLoc,e_VG)
+            elseif e_VG.protype==3 %AA
+                %              u = f_porp_nint(u,e_DatSet,e_VG);
+                m_gdl = e_VG.m_gdl;     
+                pos_dG = [m_gdl(:,2);m_gdl(:,3)];
+                ud=u(pos_dG);
+                ndn_d=e_VG.ndn_d;
+                udTotal = [m_iDefMacro(1),m_iDefMacro(4)/2;m_iDefMacro(4)/2,m_iDefMacro(2)]*xx(:,1:2)'...
+                   +reshape(ud,ndn_d,[]); 
+                pos_pG = m_gdl(:,4);
+                up=u(pos_pG(pos_pG~=0));
+                xx_p=xx((pos_pG~=0),1:2);
+                ndn_p=e_VG.ndn_p;
+                upTotal = m_iporpMacro+m_iphiMacro'*xx_p(:,1:2)'+reshape(up,ndn_p,[]);
+                matlab2gid_res_Bif(iStep,in,u,c_GdlCond,e_DatSet,e_VarEst_new,e_VarAux,...
+                     m_DefMacroCU,udTotal,upTotal,m_ElemLoc,e_VG)
+            end
+            %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MODIFIQUE PRTOYPE 3~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
          end
       end
       if e_VG.protype==1 %AA

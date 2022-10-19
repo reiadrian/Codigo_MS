@@ -55,7 +55,7 @@ for iSet = 1:nSet
     m_GradPorMacroSet = GradPorMacro{iSet}; 
     m_PorMacroSet = PorMacro{iSet}; 
     conshyp = e_DatMatSet.conshyp;
-    if conshyp==14
+    if conshyp==14 || conshyp==16 || conshyp==50
         m_BT_d = e_DatSet(iSet).m_BT_d; %Matriz B de desplazamientos-deformaciones
         m_DetJT_d = e_DatSet(iSet).m_DetJT_d; %Determinante del Jacobiano en desplazamientos
         m_DerCa_p = e_DatSet(iSet).m_DerCa_p; %Matriz en derivadas cartesianas para poropresiones
@@ -165,7 +165,7 @@ for iSet = 1:nSet
                 m_DefMacroSet(:,iElem),sigmaT_old(:,iElem),...    %m_DefMacroSet(:,:,iElem)
                 m_VolElem(iElem),e_VG_Aux4);
             end
-        case {14}
+        case {14,16,50}
             % Fuerza interna y tensor tangente del elemento
             %AA: Cuadrangulo estandar de 8 nodos (Aplicado p/medio bifase)
             m_FF_p = e_DatSet(iSet).m_FF_p;

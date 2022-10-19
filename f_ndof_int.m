@@ -6,7 +6,7 @@ if nSet~=2
     error('Lectura de datos: Cargas aplicadas: Tipo de carga no definida')
 end
 conshyp1 = e_DatSet(1).e_DatMat.conshyp;
-    if conshyp1 == 14 
+    if conshyp1 == 14 || conshyp1==15|| conshyp1 == 16
         conec_pm = unique(e_DatSet(1).conec');%Traspongo por si es un unico elemento y quede en formato martriz columna
         conec_sm = unique(e_DatSet(2).conec');
     else
@@ -24,12 +24,23 @@ end
 n_sm = size(conec_sm,1);
 ndof_pm = n_pm*ndn_pm;
 ndof_sm = n_sm*ndn_sm;
-ndoft = ndof_pm+ndof_sm;%Numero de gdl para problemas con elemntos con gdl variable
+if conshyp1==14||conshyp1==15
+    ndoft = ndof_pm+ndof_sm;%Numero de gdl para problemas con elemntos con gdl variable
+    m_con_f_sm = [conec_sm ones(n_sm,1) ones(n_sm,1) zeros(n_sm,1)];
+    m_con_f_pm = [conec_pm ones(n_pm,1) ones(n_pm,1) ones(n_pm,1)];
+    m_gdl = [m_con_f_pm; m_con_f_sm];
+elseif conshyp1==16
+%     ndof_lambda = n_pm*ndn_pm;
+    ndoft = ndof_pm+ndof_sm;%Numero de gdl para problemas con elemntos con gdl variable
+    m_con_f_sm = [conec_sm ones(n_sm,1) ones(n_sm,1) zeros(n_sm,1)];
+    m_con_f_pm = [conec_pm ones(n_pm,1) ones(n_pm,1) ones(n_pm,1)];
+    m_gdl = [m_con_f_pm; m_con_f_sm];
+end
 % m_con_f_sm = zeros(n_sm,4);
 % m_con_f_pm = zeros(n_pm,4);
-m_con_f_sm = [conec_sm ones(n_sm,1) ones(n_sm,1) zeros(n_sm,1)];
-m_con_f_pm = [conec_pm ones(n_pm,1) ones(n_pm,1) ones(n_pm,1)];
-m_gdl = [m_con_f_pm; m_con_f_sm];
+% m_con_f_sm = [conec_sm ones(n_sm,1) ones(n_sm,1) zeros(n_sm,1)];
+% m_con_f_pm = [conec_pm ones(n_pm,1) ones(n_pm,1) ones(n_pm,1)];
+% m_gdl = [m_con_f_pm; m_con_f_sm];
 m_gdl = sortrows(m_gdl,1);
 nnodo = size(m_gdl,1);
 pos = 0;

@@ -47,7 +47,7 @@ function e_DatSet = f_MatBT(xx,e_DatSet,e_VG)
              switch conshyp
                  case {1,2,3}
                     m_FF = f_FF_quad_q1(e_DatElemSet,e_VG);
-                 case {14}
+                 case {14,16}
                     [m_FF_d,m_FF_p] = f_FF_Bifase_quadbq(e_DatElemSet,e_VG); %AA: cree funcion
                  otherwise
                     error('Matrices de funcion de forma: Elemento no implementado.') 
@@ -73,7 +73,7 @@ function e_DatSet = f_MatBT(xx,e_DatSet,e_VG)
                  case {1,2,3}
                       m_BT = zeros(ntens,dofpe,npg,nElem);
                       m_DetJT = zeros(npg,nElem);
-                 case {14}
+                 case {14,16}
                       dofpe_d = e_DatElemSet.dofpe_d;
                       dofpe_p=  e_DatElemSet.dofpe_p;
                       m_BT_d = zeros(ntens,dofpe_d,npg,nElem);
@@ -152,7 +152,7 @@ function e_DatSet = f_MatBT(xx,e_DatSet,e_VG)
                  case {1,2,3}
                     [m_BT(:,:,:,iElem),m_DetJT(:,iElem)] = f_MatBe_quad_q1(...
                           coord_n,e_DatElemSet,e_VG);
-                 case {14}
+                 case {14,16}
                      [m_BT_d(:,:,:,iElem),m_DetJT_d(:,iElem),m_DerCa_p(:,:,:,iElem),m_DetJT_p(:,iElem)]...
                            = f_MatBe_Bifase(coord_n,e_DatElemSet,e_VG); %AA: cree funcion
                  otherwise
@@ -181,7 +181,7 @@ function e_DatSet = f_MatBT(xx,e_DatSet,e_VG)
                         e_DatSet(iSet).m_BT = m_BT;
                         e_DatSet(iSet).m_DetJT = m_DetJT;
                         e_DatSet(iSet).m_FF = m_FF;
-                    case {14}
+                    case {14,16}
                          e_DatSet(iSet).m_BT_d = m_BT_d;
                          e_DatSet(iSet).m_DetJT_d = m_DetJT_d;
                          e_DatSet(iSet).m_DerCa_p = m_DerCa_p;
@@ -212,7 +212,7 @@ function e_DatSet = f_MatBT(xx,e_DatSet,e_VG)
                         switch conshyp
                             case {1,2,3}
                                 e_DatSet(iSet).m_VolElem = wg'*m_DetJT;
-                            case {14}
+                            case {14,16}
                                 e_DatSet(iSet).m_VolElem_d = wg'*m_DetJT_d; % VER CUESTION DE ESPESOR YA IMPUESTA
                                 e_DatSet(iSet).m_VolElem_p = wg'*m_DetJT_p;
                         end

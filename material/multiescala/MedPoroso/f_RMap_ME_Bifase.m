@@ -73,19 +73,25 @@ c_PorMacro = arrayfun(@(x)repmat(p_new,[1,x.e_DatElem.npg,x.nElem]),e_DatSet,'Un
 
 % ESQUEMA DE NEWTON-RAPHSON
 Du_step_new = zeros(ndoft,1);
-if conshyp==15
-    [Fext] = f_Fflux(Fext,u,e_DatSet,e_VG); %AA: add function
-elseif conshyp==16
+% if conshyp==15
+%     [Fext] = f_Fflux(Fext,u,e_DatSet,e_VG); %AA: add function
+% elseif conshyp==16
     [Fext] = f_Fflux_ML(Fext,u,e_DatSet,e_VG); %AA: add function
-end
+% end
 
 [u,c_GdlCond,Fint,e_VarEst_new,e_VarAux,Du_step_new,c_CT,KT] = newton_raphsonPM(...
 xx,m_LinCond,dofl,doff,u,Du_step_new,c_GdlCond,Du_step_old,Fint,Fext,e_VarEst_old,e_VarAux,e_DatSet,...
 c_DefMacro,c_GradPorMacro,c_PorMacro,e_VG);
 
 % OPERADORES TANGENTES HOMOGENEIZADOS
-[e_TanOp,m_VarFluc_eps0,m_VarFluc_p0,m_VarFluc_phi0] = f_OpTangHomBifase(KT,c_CT,m_LinCond,dofl,doff,e_DatSet,omegaMicro_d,...
-true(nElemTot,1),true(nElemTot,1),xx,e_VG,m_VarFluc_eps0,m_VarFluc_p0,m_VarFluc_phi0);
+if e_VG.protype == 1
+    [e_TanOp,m_VarFluc_eps0,m_VarFluc_p0,m_VarFluc_phi0] = f_OpTangHomBifase(KT,c_CT,m_LinCond,dofl,doff,e_DatSet,omegaMicro_d,...
+    true(nElemTot,1),true(nElemTot,1),xx,e_VG,m_VarFluc_eps0,m_VarFluc_p0,m_VarFluc_phi0);
+elseif e_VG.protype==3
+    OmegaMicro_pm = e_DatMatSetMacro.Omega_micro_pm;
+    [e_TanOp,m_VarFluc_eps0,m_VarFluc_p0,m_VarFluc_phi0] = f_OpTangHomBifase3(KT,c_CT,m_LinCond,dofl,doff,e_DatSet,omegaMicro_d,OmegaMicro_pm,...
+    true(nElemTot,1),true(nElemTot,1),xx,e_VG,m_VarFluc_eps0,m_VarFluc_p0,m_VarFluc_phi0);
+end
 
 %Se asume que no se realiza analisis de bifurcacion con el tensor tangente constitutivo homogeneizado, por
 %lo que en el caso ser implex, se devuelve nulo el tensor implicito homogeneizado.
@@ -96,16 +102,25 @@ end
 
 % VEEEEER!!!!!!!!!!!!!!   
 % CALCULO DE VARIABLES HOMOGENEIZADAS
-sigmaE_new = f_HomogArea({e_VarEst_new.sigmaE},ntens,omegaMicro_d,{e_DatSet.m_DetJT_d},e_DatSet,e_VG);
-sigmaT_new = f_HomogArea({e_VarEst_new.sigmaT},ntens,omegaMicro_d,{e_DatSet.m_DetJT_d},e_DatSet,e_VG);
-mflu_new = f_HomogArea({e_VarEst_new.mflu},1,omegaMicro_d,{e_DatSet.m_DetJT_d},e_DatSet,e_VG);
+if e_VG.protype == 1
+    sigmaE_new = f_HomogArea({e_VarEst_new.sigmaE},ntens,omegaMicro_d,{e_DatSet.m_DetJT_d},e_DatSet,e_VG);
+    sigmaT_new = f_HomogArea({e_VarEst_new.sigmaT},ntens,omegaMicro_d,{e_DatSet.m_DetJT_d},e_DatSet,e_VG);
+    mflu_new = f_HomogArea({e_VarEst_new.mflu},1,omegaMicro_d,{e_DatSet.m_DetJT_d},e_DatSet,e_VG);
 
-velflu_new = f_HomogArea({e_VarEst_new.velflu},2,omegaMicro_d,{e_DatSet.m_DetJT_d},e_DatSet,e_VG);
-mfluY_new = f_HomogArea({e_VarEst_new.mYcord},2,omegaMicro_d,{e_DatSet.m_DetJT_d},e_DatSet,e_VG);
-defHomogFl = f_HomogArea({e_VarEst_new.eps_fluct},ntens,omegaMicro_d,{e_DatSet.m_DetJT_d},e_DatSet,e_VG);
+    velflu_new = f_HomogArea({e_VarEst_new.velflu},2,omegaMicro_d,{e_DatSet.m_DetJT_d},e_DatSet,e_VG);
+    mfluY_new = f_HomogArea({e_VarEst_new.mYcord},2,omegaMicro_d,{e_DatSet.m_DetJT_d},e_DatSet,e_VG);
+    defHomogFl = f_HomogArea({e_VarEst_new.eps_fluct},ntens,omegaMicro_d,{e_DatSet.m_DetJT_d},e_DatSet,e_VG);
+elseif e_VG.protype==3
+    sigmaE_new = f_HomogArea3d({e_VarEst_new.sigmaE},ntens,omegaMicro_d,e_DatSet,e_VG);
+    sigmaT_new = f_HomogArea3d({e_VarEst_new.sigmaT},ntens,omegaMicro_d,e_DatSet,e_VG);
+    mflu_new = f_HomogArea3d({e_VarEst_new.mflu},1,OmegaMicro_pm,e_DatSet,e_VG);
 
+    velflu_new = f_HomogArea3d({e_VarEst_new.velflu},2,OmegaMicro_pm,e_DatSet,e_VG);
+    mfluY_new = f_HomogArea3d({e_VarEst_new.mYcord},2,OmegaMicro_pm,e_DatSet,e_VG);
+    defHomogFl = f_HomogArea3d({e_VarEst_new.eps_fluct},ntens,OmegaMicro_pm,e_DatSet,e_VG);
+end
 %Verificacion de la media del desplazamiento y de la poropresion
-[m_uMedioFl_d,m_uMedioFl_p] = f_MediaDespCU_Bif(u,omegaMicro_d,e_DatSet,e_VG);
+[m_uMedioFl_d,m_uMedioFl_p] = f_MediaDespCU_Bif3(u,omegaMicro_d,OmegaMicro_pm,e_DatSet,e_VG);
 
 fprintf('Elemento %d: PG %d: Norma de la deformacion fluctuante media: %g\n',e_VGMacro.iElemNum,...
 e_VGMacro.iPG,norm(defHomogFl))
@@ -123,7 +138,7 @@ hvar_newMacro = struct('u',u,'c_GdlCond',{c_GdlCond},'Fint',Fint,'e_VarEst',e_Va
 end
 
 %%
-function [m_uMedio_d,m_uMedio_p] = f_MediaDespCU_Bif(u,omegaMicro,e_DatSet,e_VG)
+function [m_uMedio_d,m_uMedio_p] = f_MediaDespCU_Bif3(u,omegaMicro,omegaMicro_pm,e_DatSet,e_VG)
 
    nSet = e_VG.nSet;
    %El desplazamiento es un campo nodal, por lo que para intregrar sobre el dominio se lo lleva a los punto de
@@ -134,33 +149,55 @@ function [m_uMedio_d,m_uMedio_p] = f_MediaDespCU_Bif(u,omegaMicro,e_DatSet,e_VG)
    %
    for iSet = 1:nSet
       %
-      nElem = e_DatSet(iSet).nElem;
-      nPG = e_DatSet(iSet).e_DatElem.npg;
-      m_DofElem = e_DatSet(iSet).m_DofElem;
-      m_FF_d = e_DatSet(iSet).m_FF_d;
-      m_FF_p = e_DatSet(iSet).m_FF_p;
-      %
-      pos_d =  e_DatSet(iSet).e_DatElem.pos_d;
-      pos_p =  e_DatSet(iSet).e_DatElem.pos_p;
-      m_uElemSet_d = reshape(u(m_DofElem(pos_d,1:nElem)),[],nElem);
-      m_uElemSet_p = reshape(u(m_DofElem(pos_p,1:nElem)),[],nElem);
-      %
-      m_DespPG = zeros(2,nPG,nElem);
-      m_PorpPG = zeros(1,nPG,nElem);
-      for iElem = 1:nElem
-         %squeeze llama reshape, asi que no es mas rapido que esta si se conoce cual es la dimension de la
-         %matriz con valor 1.
-         %Desplazamientos
-         m_DespPG(:,:,iElem) = squeeze(sum(bsxfun(@times,m_FF_d(:,:,:),m_uElemSet_d(:,iElem)'),2));
-         %Poropresiones
-         m_PorpPG(:,:,iElem) = squeeze(sum(bsxfun(@times,m_FF_p(:,:,:),m_uElemSet_p(:,iElem)'),2));
+      if e_DatSet(iSet).e_DatMat.conshyp==14||e_DatSet(iSet).e_DatMat.conshyp==15||e_DatSet(iSet).e_DatMat.conshyp==16
+          nElem = e_DatSet(iSet).nElem;
+          nPG = e_DatSet(iSet).e_DatElem.npg;
+          m_DofElem = e_DatSet(iSet).m_DofElem;
+          m_FF_d = e_DatSet(iSet).m_FF_d;
+          m_FF_p = e_DatSet(iSet).m_FF_p;
+          %
+          pos_d =  e_DatSet(iSet).e_DatElem.pos_d;
+          pos_p =  e_DatSet(iSet).e_DatElem.pos_p;
+          m_uElemSet_d = reshape(u(m_DofElem(pos_d,1:nElem)),[],nElem);
+          m_uElemSet_p = reshape(u(m_DofElem(pos_p,1:nElem)),[],nElem);
+          %
+          m_DespPG = zeros(2,nPG,nElem);
+          m_PorpPG = zeros(1,nPG,nElem);
+          for iElem = 1:nElem
+             %squeeze llama reshape, asi que no es mas rapido que esta si se conoce cual es la dimension de la
+             %matriz con valor 1.
+             %Desplazamientos
+             m_DespPG(:,:,iElem) = squeeze(sum(bsxfun(@times,m_FF_d(:,:,:),m_uElemSet_d(:,iElem)'),2));
+             %Poropresiones
+             m_PorpPG(:,:,iElem) = squeeze(sum(bsxfun(@times,m_FF_p(:,:,:),m_uElemSet_p(:,iElem)'),2));
+          end
+          %
+          c_DespElem{iSet} = m_DespPG;
+          c_PorpElem{iSet} = m_PorpPG;
+      elseif e_DatSet(iSet).e_DatMat.conshyp==1
+          nElem = e_DatSet(iSet).nElem;
+          nPG = e_DatSet(iSet).e_DatElem.npg;
+          m_DofElem = e_DatSet(iSet).m_DofElem;
+          m_FF_d = e_DatSet(iSet).m_FF;
+          %
+          m_uElemSet_d = reshape(u(m_DofElem(:,1:nElem)),[],nElem);
+          %
+          m_DespPG = zeros(2,nPG,nElem);
+          for iElem = 1:nElem
+             %squeeze llama reshape, asi que no es mas rapido que esta si se conoce cual es la dimension de la
+             %matriz con valor 1.
+             %Desplazamientos
+             m_DespPG(:,:,iElem) = squeeze(sum(bsxfun(@times,m_FF_d(:,:,:),m_uElemSet_d(:,iElem)'),2));
+             %Poropresiones
+          end
+          %
+          c_DespElem{iSet} = m_DespPG;
       end
-      %
-      c_DespElem{iSet} = m_DespPG;
-      c_PorpElem{iSet} = m_PorpPG;
+          
    end
-   
-   m_uMedio_d = f_HomogArea(c_DespElem,2,omegaMicro,{e_DatSet.m_DetJT_d},e_DatSet,e_VG);
-   m_uMedio_p = f_HomogArea(c_PorpElem,1,omegaMicro,{e_DatSet.m_DetJT_p},e_DatSet,e_VG);
+%       m_uMedio_d = f_HomogArea(c_DespElem,2,omegaMicro,{e_DatSet.m_DetJT_d},e_DatSet,e_VG);
+%    m_uMedio_p = f_HomogArea(c_PorpElem,1,omegaMicro,{e_DatSet.m_DetJT_p},e_DatSet,e_VG);
+   m_uMedio_d = f_HomogArea3d(c_DespElem,2,omegaMicro,e_DatSet,e_VG);
+   m_uMedio_p = f_HomogArea3d(c_PorpElem,1,omegaMicro_pm,e_DatSet,e_VG);
 
 end

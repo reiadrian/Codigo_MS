@@ -63,6 +63,28 @@ function e_DatMatME = f_VarME(nomArchME,dirDat,m_ElemPGImpr)
                 e_DatMatME = struct('in',in,'xx',xx,'m_SetElem',m_SetElem,'f',f,'funbc',funbc,...
                 'e_DatSet',e_DatSet,'m_ElemPGImpr',m_ElemPGImpr,'omegaMicro_d',Omega_micro_d,...
                 'omegaMicro_p',Omega_micro_p,'e_VG',e_VG);
+   elseif e_VG.protype==3
+%                 m_VolElem_d = zeros(1,e_VG.nElem);
+%                 m_VolElem_d([e_DatSet.m_IndElemSet]) = [e_DatSet.m_VolElem_d];
+%                 m_VolElem_p = zeros(1,e_VG.nElem);
+%                 m_VolElem_p([e_DatSet.m_IndElemSet]) = [e_DatSet.m_VolElem_p];
+   %En caso que se ingrese en el script el �rea micro, se utiliza directamente esa.
+                Omega_micro_d=0;
+                Omega_micro_pm = 0;
+                if ~exist('Omega_micro','var')
+                    %Esta expresi�n es correcta solo si la celda unitaria no tiene agujeros.
+                    for iSet = 1:e_VG.nSet
+                        if e_DatSet(iSet).e_DatMat.conshyp==16
+                            Omega_micro_d = Omega_micro_d + sum(e_DatSet(iSet).m_VolElem_d);
+                            Omega_micro_pm = Omega_micro_pm + sum(e_DatSet(iSet).m_VolElem_d);
+                        elseif e_DatSet(iSet).e_DatMat.conshyp==1
+                            Omega_micro_d = Omega_micro_d + sum(e_DatSet(iSet).m_VolElem);
+                        end
+                    end
+                end
+                e_DatMatME = struct('in',in,'xx',xx,'m_SetElem',m_SetElem,'f',f,'funbc',funbc,...
+                'e_DatSet',e_DatSet,'m_ElemPGImpr',m_ElemPGImpr,'omegaMicro_d',Omega_micro_d,...
+                'omegaMicro_p',Omega_micro_d,'Omega_micro_pm',Omega_micro_pm,'e_VG',e_VG);
    end
    %Imprensi�n de archivo de postprocesado de la malla y inicializaci�n del archivo de datos
    %matlab2gid_mesh(in,xx,e_DatSet,e_VG)

@@ -147,7 +147,7 @@ if e_VG.esME
                   elseif ndime==3
                       fprintf(fid_res,'ComponentNames "X-DISPL" "Y-DISPL" "Z-DISPL"\n');
                   end
-              case {1,3}
+              case {1}
                 if ndime==2
                    %Desplazamientos
                    fprintf(fid_res,'Result "Displacements//Total" "Load Analysis" %d Vector OnNodes\n',iStep);
@@ -174,9 +174,37 @@ if e_VG.esME
                    fprintf(fid_res,'End Values\n');
                elseif ndime==3
                    error('Problema bifasico no resuelto en 3D');
-%                    fprintf(fid_res,'ComponentNames "X-DISPL" "Y-DISPL" "Z-DISPL"\n');
-                end                
-       end %protype %AA
+                end
+                %                    fprintf(fid_res,'ComponentNames "X-DISPL" "Y-DISPL" "Z-DISPL"\n');
+            case {3}
+                if ndime==2
+                   %Desplazamientos
+                   fprintf(fid_res,'Result "Displacements//Total" "Load Analysis" %d Vector OnNodes\n',iStep);
+                   ndn_d=e_VG.ndn_d;
+                   udT=udTotal ;%udTotal(e_VG.pos_d) %Deberia ver si se incluye un vectore udTotal QUE INCLUYA POROPRESIONES MACRO
+                   fprintf(fid_res,'ComponentNames "X-DISPL" "Y-DISPL"\n');
+                   fprintf(fid_res,'Values\n');
+                   format = ['%d',repmat(' %.15g',1,ndn_d),'\n'];
+                   fprintf(fid_res,format,[in';reshape(udT,ndn_d,[])]);   %[in,u(1:ndime:end),u(2:ndime:end)]'
+                   fprintf(fid_res,'End Values\n');
+                   
+                   %Poropresiones
+                   fprintf(fid_res,'Result "Pore-pressure//Total" "Load Analysis" %d Scalar OnNodes\n',iStep);
+                   ndn_p=e_VG.ndn_p;
+%                    in_esq=e_VG.in_esq;
+%                    pos_pG=3*in_esq;
+%                    pos_pG=3*in;
+%                    up=u(pos_pG); %Deberia ver si se incluye un vectore udTotal QUE INCLUYA POROPRESIONES MACRO
+%                    inp=in(in_esq);
+                   fprintf(fid_res,'ComponentNames "Pore-pressure"\n');
+                   fprintf(fid_res,'Values\n');
+                   format = ['%d',repmat(' %.15g',1,ndn_p),'\n'];
+                   fprintf(fid_res,format,[in(m_gdl(:,4)~=0)';reshape(upTotal,ndn_p,[])]);   %[in,u(1:ndime:end),u(2:ndime:end)]'
+                   fprintf(fid_res,'End Values\n');
+                elseif ndime==3
+                   error('Problema bifasico no resuelto en 3D');
+                end               
+        end %protype %AA
                   
       case 30
          fprintf(fid_res,'Result "Temperature//Total" "Load Analysis" %d Scalar OnNodes\n',iStep);
@@ -1467,7 +1495,7 @@ if e_VG.esME
    switch struhyp
       case {1,2,20}
         switch protype %AA             
-              case {1,3}
+              case {1}
                 if ndime==2
                    %Desplazamientos
                    fprintf(fid_resp,'Result "Displacements//Total" "Load Analysis" %d Vector OnNodes\n',iStep);
@@ -1495,7 +1523,36 @@ if e_VG.esME
                elseif ndime==3
                    error('Problema bifasico no resuelto en 3D');
 %                    fprintf(fid_res,'ComponentNames "X-DISPL" "Y-DISPL" "Z-DISPL"\n');
-                end                
+                end
+            case {3}
+                if ndime==2
+                   %Desplazamientos
+                   fprintf(fid_resp,'Result "Displacements//Total" "Load Analysis" %d Vector OnNodes\n',iStep);
+                   ndn_d=e_VG.ndn_d;
+                   udT=udTotal ;%udTotal(e_VG.pos_d) %Deberia ver si se incluye un vectore udTotal QUE INCLUYA POROPRESIONES MACRO
+                   fprintf(fid_resp,'ComponentNames "X-DISPL" "Y-DISPL"\n');
+                   fprintf(fid_resp,'Values\n');
+                   format = ['%d',repmat(' %.15g',1,ndn_d),'\n'];
+                   fprintf(fid_resp,format,[in';reshape(udT,ndn_d,[])]);   %[in,u(1:ndime:end),u(2:ndime:end)]'
+                   fprintf(fid_resp,'End Values\n');
+                   
+                   %Poropresiones
+                   fprintf(fid_resp,'Result "Pore-pressure//Total" "Load Analysis" %d Scalar OnNodes\n',iStep);
+                   ndn_p=e_VG.ndn_p;
+%                    in_esq=e_VG.in_esq;
+%                    pos_pG=3*in_esq;
+%                    pos_pG=3*in;
+%                    up=u(pos_pG); %Deberia ver si se incluye un vectore udTotal QUE INCLUYA POROPRESIONES MACRO
+%                    inp=in(in_esq);
+                   fprintf(fid_resp,'ComponentNames "Pore-pressure"\n');
+                   fprintf(fid_resp,'Values\n');
+                   format = ['%d',repmat(' %.15g',1,ndn_p),'\n'];
+                   fprintf(fid_resp,format,[in(m_gdl(:,4)~=0)';reshape(upTotal,ndn_p,[])]);   %[in,u(1:ndime:end),u(2:ndime:end)]'
+                   fprintf(fid_resp,'End Values\n');
+               elseif ndime==3
+                   error('Problema bifasico no resuelto en 3D');
+%                    fprintf(fid_res,'ComponentNames "X-DISPL" "Y-DISPL" "Z-DISPL"\n');
+               end 
        end %protype %AA                  
       case 30
          fprintf(fid_resp,'Result "Temperature//Total" "Load Analysis" %d Scalar OnNodes\n',iStep);
